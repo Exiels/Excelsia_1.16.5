@@ -4,7 +4,6 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import fr.exiel.excelsia.Launcher;
 import fr.exiel.excelsia.ui.PanelManager;
-import fr.exiel.excelsia.ui.panel.IPanel;
 import fr.exiel.excelsia.ui.panel.Panel;
 import fr.exiel.excelsia.ui.panels.pages.content.ContentPanel;
 import fr.exiel.excelsia.ui.panels.pages.content.Home;
