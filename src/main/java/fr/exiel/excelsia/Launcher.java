@@ -1,41 +1,45 @@
 package fr.exiel.excelsia;
 
 import fr.exiel.excelsia.ui.PanelManager;
+import fr.exiel.excelsia.ui.panels.pages.App;
 import fr.exiel.excelsia.ui.panels.pages.Login;
-import fr.exiel.excelsia.utils.Helpers;
 import fr.flowarg.flowlogger.ILogger;
 import fr.flowarg.flowlogger.Logger;
 import fr.litarvan.openauth.AuthPoints;
 import fr.litarvan.openauth.AuthenticationException;
 import fr.litarvan.openauth.Authenticator;
-import fr.litarvan.openauth.model.AuthProfile;
+import fr.litarvan.openauth.microsoft.MicrosoftAuthResult;
+import fr.litarvan.openauth.microsoft.MicrosoftAuthenticationException;
+import fr.litarvan.openauth.microsoft.MicrosoftAuthenticator;
 import fr.litarvan.openauth.model.response.RefreshResponse;
+import fr.theshark34.openlauncherlib.minecraft.AuthInfos;
+import fr.theshark34.openlauncherlib.minecraft.util.GameDirGenerator;
 import fr.theshark34.openlauncherlib.util.Saver;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 
-import java.io.File;
-import java.security.AuthProvider;
+import java.nio.file.Path;
 
 public class Launcher extends Application {
     private PanelManager panelManager;
     private static Launcher instance;
     private final ILogger logger;
-    private final File launcherDir = Helpers.generateGamePath("Excelsia");
+    private final Path launcherDir = GameDirGenerator.createGameDir("Excelsia", true);
     private final Saver saver;
 
-    private AuthProfile authProfile = null;
+    private AuthInfos authInfos = null;
 
     public Launcher() {
         instance = this;
-        this.logger = new Logger("[Excelsia]", new File(this.launcherDir, "launcher.log"));
-        if (!this.launcherDir.exists()) {
-            if (!this.launcherDir.mkdirs()) {
+        this.logger = new Logger("[Excelsia]", Path.of(this.launcherDir.toString(), "launcher.log"));
+        if (!this.launcherDir.toFile().exists()) {
+            if (!this.launcherDir.toFile().mkdir()) {
                 this.logger.err("Unable to create launcher folder");
             }
         }
 
-        saver = new Saver(new File(launcherDir, "config.properties"));
+        saver = new Saver(Path.of(launcherDir.toString(), "config.properties"));
         saver.load();
     }
 
@@ -47,7 +51,9 @@ public class Launcher extends Application {
         this.panelManager.init();
 
         if (this.isUserAlreadyLoggedIn()) {
-            logger.info("Hello " + authProfile.getName());
+            logger.info("Hello " + authInfos.getUsername());
+
+            this.panelManager.showPanel(new App());
         } else {
             this.panelManager.showPanel(new Login());
         }
@@ -62,25 +68,48 @@ public class Launcher extends Application {
                 saver.set("accessToken", response.getAccessToken());
                 saver.set("clientToken", response.getClientToken());
                 saver.save();
-                this.authProfile = response.getSelectedProfile();
+                this.setAuthInfos(new AuthInfos(
+                        response.getSelectedProfile().getName(),
+                        response.getAccessToken(),
+                        response.getClientToken(),
+                        response.getSelectedProfile().getId()
+                ));
 
                 return true;
-            }catch (AuthenticationException e) {
+            } catch (AuthenticationException ignored) {
                 saver.remove("accessToken");
                 saver.remove("clientToken");
                 saver.save();
             }
+        } else if (saver.get("msAccessToken") != null && saver.get("msRefreshToken") != null) {
+            try {
+                MicrosoftAuthenticator authenticator = new MicrosoftAuthenticator();
+                MicrosoftAuthResult response = authenticator.loginWithRefreshToken(saver.get("msRefreshToken"));
 
+                saver.set("msAccessToken", response.getAccessToken());
+                saver.set("msRefreshToken", response.getRefreshToken());
+                saver.save();
+                this.setAuthInfos(new AuthInfos(
+                        response.getProfile().getName(),
+                        response.getAccessToken(),
+                        response.getProfile().getId()
+                ));
+                return true;
+            } catch (MicrosoftAuthenticationException e) {
+                saver.remove("msAccessToken");
+                saver.remove("msRefreshToken");
+                saver.save();
+            }
         }
         return false;
     }
 
-    public void setAuthProfile(AuthProfile authProfile) {
-        this.authProfile = authProfile;
+    public void setAuthInfos(AuthInfos authInfos) {
+        this.authInfos = authInfos;
     }
 
-    public AuthProfile getAuthProfile() {
-        return authProfile;
+    public AuthInfos getAuthInfos() {
+        return authInfos;
     }
 
     public ILogger getLogger() {
@@ -92,5 +121,19 @@ public class Launcher extends Application {
 
     public Saver getSaver() {
         return saver;
+    }
+
+    public Path getLauncherDir() {
+        return launcherDir;
+    }
+
+    @Override
+    public void stop() {
+        Platform.exit();
+        System.exit(0);
+    }
+
+    public void hideWindow() {
+        this.panelManager.getStage().hide();
     }
 }

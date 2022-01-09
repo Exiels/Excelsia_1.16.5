@@ -6,9 +6,12 @@ import fr.exiel.excelsia.ui.panel.Panel;
 import fr.litarvan.openauth.AuthPoints;
 import fr.litarvan.openauth.AuthenticationException;
 import fr.litarvan.openauth.Authenticator;
+import fr.litarvan.openauth.microsoft.MicrosoftAuthenticator;
 import fr.litarvan.openauth.model.AuthAgent;
 import fr.litarvan.openauth.model.response.AuthResponse;
+import fr.theshark34.openlauncherlib.minecraft.AuthInfos;
 import fr.theshark34.openlauncherlib.util.Saver;
+import javafx.application.Platform;
 import javafx.geometry.HPos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -162,7 +165,7 @@ public class Login extends Panel {
         msLoginBtn.setMaxWidth(300);
         msLoginBtn.setTranslateY(145d);
         msLoginBtn.setGraphic(view);
-        msLoginBtn.setOnMouseClicked(e -> {});
+        msLoginBtn.setOnMouseClicked(e -> this.authenticateMS());
 
         loginCard.getChildren().addAll(userField, userErrorLabel, passwordField, passwordErrorLabel, btnLogin, separator, loginWithLabel, msLoginBtn);
     }
@@ -183,18 +186,56 @@ public class Login extends Panel {
         try {
             AuthResponse response = authenticator.authenticate(AuthAgent.MINECRAFT, user, password, null);
 
-            saver.set("accesstoken", response.getAccessToken());
+            saver.set("accessToken", response.getAccessToken());
             saver.set("clientToken", response.getClientToken());
             saver.save();
 
-            Launcher.getInstance().setAuthProfile(response.getSelectedProfile());
-            this.logger.info("Hello " + response.getSelectedProfile().getName());
+            AuthInfos infos = new AuthInfos(
+                    response.getSelectedProfile().getName(),
+                    response.getAccessToken(),
+                    response.getClientToken(),
+                    response.getSelectedProfile().getId()
+            );
+
+            Launcher.getInstance().setAuthInfos(infos);
+
+            this.logger.info("Hello " + infos.getUsername());
+
+            panelManager.showPanel(new App());
         } catch (AuthenticationException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText("Une erreur est survenu lors de la connexion");
             alert.setContentText(e.getMessage());
             alert.show();
+
+            this.panelManager.showPanel(new App());
         }
+    }
+
+    public void authenticateMS() {
+        MicrosoftAuthenticator authenticator = new MicrosoftAuthenticator();
+        authenticator.loginWithAsyncWebview().whenComplete((response, error) -> {
+            if (error != null) {
+                Launcher.getInstance().getLogger().err(error.toString());
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setContentText(error.getMessage());
+                alert.show();
+                return;
+            }
+
+            saver.set("msAccessToken", response.getAccessToken());
+            saver.set("msRefreshToken", response.getRefreshToken());
+            saver.save();
+
+            Launcher.getInstance().setAuthInfos(new AuthInfos(
+                    response.getProfile().getName(),
+                    response.getAccessToken(),
+                    response.getProfile().getId()
+            ));
+            this.logger.info("Hello " + response.getProfile().getName());
+            Platform.runLater(() -> panelManager.showPanel(new App()));
+        });
     }
 }
