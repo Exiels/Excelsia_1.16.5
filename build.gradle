@@ -3,12 +3,14 @@ plugins {
     id 'java-library'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.9'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'java'
 }
 
 apply plugin: 'org.openjfx.javafxplugin'
 
 group 'fr.exiel'
-version '1.0.0'
+version '1.1.0'
 
 repositories {
     mavenCentral()
@@ -26,11 +28,14 @@ dependencies {
 
     implementation 'de.jensd:fontawesomefx-fontawesome:4.7.0-9.1.2'
 
-    implementation 'fr.flowarg:flowupdater:1.5.2'
+    implementation 'fr.flowarg:flowupdater:1.5.3'
     implementation 'fr.flowarg:openlauncherlib:3.2.3'
 
     implementation 'com.github.goxr3plus:FX-BorderlessScene:4+'
-    implementation 'com.github.oshi:oshi-core:5.8.6'
+    implementation 'com.github.oshi:oshi-core:6.1.0'
+
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.5'
 }
 
 javafx {

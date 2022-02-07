@@ -6,6 +6,7 @@ import fr.exiel.excelsia.Launcher;
 import fr.exiel.excelsia.game.MinecraftInfos;
 import fr.exiel.excelsia.ui.PanelManager;
 import fr.flowarg.flowupdater.FlowUpdater;
+import fr.flowarg.flowupdater.download.DownloadList;
 import fr.flowarg.flowupdater.download.IProgressCallback;
 import fr.flowarg.flowupdater.download.Step;
 import fr.flowarg.flowupdater.download.json.CurseFileInfo;
@@ -27,6 +28,9 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -106,7 +110,27 @@ public class Home extends  ContentPanel {
         Platform.runLater(() -> new Thread(this::update).start());
     }
 
+    private Boolean checkUpdate() {
+        String onlineMD5;
+        try {
+            URL url = new URL(MinecraftInfos.CURSE_MODS_LIST_URL);
+            InputStream is = url.openStream();
+            onlineMD5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(is);
+        } catch (IOException e) {
+            this.logger.err(e + " : MD5 Update file not found.");
+            return false;
+        }
+        String actualMD5 = saver.get("md5");
+        this.logger.info("OnlineMD5 : " + onlineMD5);
+        this.logger.info("ActualMD5 : " + actualMD5);
+        if (onlineMD5.equals(actualMD5))
+            return false;
+        saver.set("md5", onlineMD5);
+        return true;
+    }
+
     public void update() {
+        AbstractForgeVersion forge;
         IProgressCallback callback = new IProgressCallback() {
             private  final DecimalFormat decimalFormat = new DecimalFormat("#.#");
             private String stepTxt = "";
@@ -121,11 +145,11 @@ public class Home extends  ContentPanel {
             }
 
             @Override
-            public void update(long downloaded, long max) {
+            public void update(DownloadList.DownloadInfo info) {
                 Platform.runLater(() -> {
-                    percentTxt = decimalFormat.format(downloaded * 100.d / max) + "%";
+                    percentTxt = decimalFormat.format(info.getDownloadedFiles() * 100.d / info.getTotalToDownloadFiles()) + "%";
                     setStatus(String.format("%s, (%s)", stepTxt, percentTxt));
-                    setProgress(downloaded, max);
+                    setProgress(info.getDownloadedFiles(), info.getTotalToDownloadFiles());
                 });
             }
 
@@ -145,19 +169,28 @@ public class Home extends  ContentPanel {
                     .build();
 
             List<CurseFileInfo> curseMods = CurseFileInfo.getFilesFromJson(MinecraftInfos.CURSE_MODS_LIST_URL);
-            List<Mod> mods = Mod.getModsFromJson(MinecraftInfos.MODS_LIST_URL);
 
-            final AbstractForgeVersion forge = new ForgeVersionBuilder(MinecraftInfos.FORGE_VERSION_TYPE)
-                    .withForgeVersion(MinecraftInfos.FORGE_VERSION)
-                    .withCurseMods(curseMods)
-                    .withMods(mods)
+            final UpdaterOptions options = new UpdaterOptions.UpdaterOptionsBuilder()
+                    .withSilentRead(false)
                     .build();
+
+            if (!checkUpdate()) {
+                forge = new ForgeVersionBuilder(MinecraftInfos.FORGE_VERSION_TYPE)
+                        .withForgeVersion(MinecraftInfos.FORGE_VERSION)
+                        .build();
+            } else {
+                forge = new ForgeVersionBuilder(MinecraftInfos.FORGE_VERSION_TYPE)
+                        .withForgeVersion(MinecraftInfos.FORGE_VERSION)
+                        .withCurseMods(curseMods)
+                        .build();
+            }
 
             final FlowUpdater updater = new FlowUpdater.FlowUpdaterBuilder()
                     .withVanillaVersion(vanillaVersion)
                     .withForgeVersion(forge)
                     .withLogger(Launcher.getInstance().getLogger())
                     .withProgressCallback(callback)
+                    .withUpdaterOptions(options)
                     .build();
 
             updater.update(Launcher.getInstance().getLauncherDir());
@@ -229,6 +262,7 @@ public class Home extends  ContentPanel {
     }
 
     public enum StepInfo {
+        INTEGRATION("Intégration..."),
         READ("Lecture du fichier json..."),
         DL_LIBS("Téléchargement des libraries..."),
         DL_ASSETS("Téléchargement des ressources..."),
