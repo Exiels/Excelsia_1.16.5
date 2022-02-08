@@ -2,6 +2,7 @@ package fr.exiel.excelsia.ui.panels.partials;
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
+import fr.exiel.excelsia.game.MinecraftInfos;
 import fr.exiel.excelsia.ui.PanelManager;
 import fr.exiel.excelsia.ui.panel.Panel;
 import javafx.scene.control.Label;
@@ -45,7 +46,7 @@ public class TopBar extends Panel {
         this.layout.getChildren().add(imageView);
 
         // TopBar: center
-        Label title = new Label("Excelsia Launcher");
+        Label title = new Label(MinecraftInfos.SERVER_NAME + " Launcher V" + MinecraftInfos.LAUNCHER_VERSION);
         title.setFont(Font.font("Consolas", FontWeight.BOLD, FontPosture.REGULAR, 18f));
         title.setStyle("-fx-text-fill: white;");
         setCenterH(title);

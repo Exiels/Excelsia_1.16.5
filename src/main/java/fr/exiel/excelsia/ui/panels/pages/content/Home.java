@@ -10,7 +10,6 @@ import fr.flowarg.flowupdater.download.DownloadList;
 import fr.flowarg.flowupdater.download.IProgressCallback;
 import fr.flowarg.flowupdater.download.Step;
 import fr.flowarg.flowupdater.download.json.CurseFileInfo;
-import fr.flowarg.flowupdater.download.json.Mod;
 import fr.flowarg.flowupdater.utils.UpdaterOptions;
 import fr.flowarg.flowupdater.versions.AbstractForgeVersion;
 import fr.flowarg.flowupdater.versions.ForgeVersionBuilder;
@@ -204,7 +203,7 @@ public class Home extends  ContentPanel {
 
     public void startGame(String gameVersion) {
         GameInfos infos = new GameInfos(
-                "Excelsia",
+                MinecraftInfos.SERVER_NAME,
                 true,
                 new GameVersion(gameVersion, MinecraftInfos.OLL_GAME_TYPE.setNFVD(MinecraftInfos.OLL_FORGE_DISCRIMINATOR)),
                 new GameTweak[]{}

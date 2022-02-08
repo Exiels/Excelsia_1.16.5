@@ -103,6 +103,33 @@ public class Settings extends ContentPanel{
         comboBox.setTranslateY(130d);
         contentPane.getChildren().add(comboBox);
 
+        // Mods Find Reset Label
+        Label resetMods = new Label("Reset Mods Finder");
+        resetMods.getStyleClass().add("settings-labels");
+        setLeft(resetMods);
+        setCanTakeAllSize(resetMods);
+        setTop(resetMods);
+        resetMods.setTextAlignment(TextAlignment.LEFT);
+        resetMods.setTranslateX(24d);
+        resetMods.setTranslateY(165d);
+        contentPane.getChildren().add(resetMods);
+
+        // Mods Find Reset Button
+        Button resetModsBtn = new Button("Reset");
+        resetModsBtn.getStyleClass().add("reset-mods");
+        FontAwesomeIconView iconRst = new FontAwesomeIconView(FontAwesomeIcon.UNDO);
+        iconRst.getStyleClass().add("save-icon");
+        resetModsBtn.setGraphic(iconRst);
+        setLeft(resetModsBtn);
+        setTop(resetModsBtn);
+        setCanTakeAllSize(resetModsBtn);
+        resetModsBtn.setTranslateX(35d);
+        resetModsBtn.setTranslateY(190d);
+        resetModsBtn.setOnMouseClicked(e -> {
+            saver.set("md5", "0");
+        });
+        contentPane.getChildren().add(resetModsBtn);
+
         /*
          * Save Button
          */

@@ -1,6 +1,7 @@
 package fr.exiel.excelsia.ui.panels.pages;
 
 import fr.exiel.excelsia.Launcher;
+import fr.exiel.excelsia.game.MinecraftInfos;
 import fr.exiel.excelsia.ui.PanelManager;
 import fr.exiel.excelsia.ui.panel.Panel;
 import fr.litarvan.openauth.AuthPoints;
@@ -72,7 +73,7 @@ public class Login extends Panel {
         /*
          * Login sidebar
          */
-        Label title = new Label("Excelsia");
+        Label title = new Label(MinecraftInfos.SERVER_NAME + "V" + MinecraftInfos.LAUNCHER_VERSION);
         title.setFont(Font.font("Consolas", FontWeight.BOLD, FontPosture.REGULAR, 30f));
         title.getStyleClass().add("login-title");
         setCenterH(title);

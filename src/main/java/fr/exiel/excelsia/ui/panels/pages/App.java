@@ -3,6 +3,7 @@ package fr.exiel.excelsia.ui.panels.pages;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import fr.exiel.excelsia.Launcher;
+import fr.exiel.excelsia.game.MinecraftInfos;
 import fr.exiel.excelsia.ui.PanelManager;
 import fr.exiel.excelsia.ui.panel.Panel;
 import fr.exiel.excelsia.ui.panels.pages.content.ContentPanel;
@@ -81,7 +82,7 @@ public class App extends Panel {
          * Side menu
          */
         // Titre
-        Label title = new Label("Excelsia Launcher");
+        Label title = new Label(MinecraftInfos.SERVER_NAME + " V" + MinecraftInfos.LAUNCHER_VERSION);
         title.setFont(Font.font("Consolas", FontWeight.BOLD, FontPosture.REGULAR, 30f));
         title.getStyleClass().add("home-title");
         setCenterH(title);

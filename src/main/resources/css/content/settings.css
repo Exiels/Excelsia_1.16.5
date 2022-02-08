@@ -52,6 +52,11 @@
     -fx-background-color: #98BB6D;
 }
 
+.reset-mods {
+    -fx-background-radius: 10px;
+    -fx-font-size: 16px;
+}
+
 .save-btn {
     -fx-background-radius: 10px;
     -fx-font-size: 16px;

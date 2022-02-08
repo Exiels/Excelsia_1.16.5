@@ -1,5 +1,6 @@
 package fr.exiel.excelsia;
 
+import fr.exiel.excelsia.game.MinecraftInfos;
 import fr.exiel.excelsia.ui.PanelManager;
 import fr.exiel.excelsia.ui.panels.pages.App;
 import fr.exiel.excelsia.ui.panels.pages.Login;
@@ -25,14 +26,14 @@ public class Launcher extends Application {
     private PanelManager panelManager;
     private static Launcher instance;
     private final ILogger logger;
-    private final Path launcherDir = GameDirGenerator.createGameDir("Excelsia", true);
+    private final Path launcherDir = GameDirGenerator.createGameDir(MinecraftInfos.SERVER_NAME, true);
     private final Saver saver;
 
     private AuthInfos authInfos = null;
 
     public Launcher() {
         instance = this;
-        this.logger = new Logger("[Excelsia]", Path.of(this.launcherDir.toString(), "launcher.log"));
+        this.logger = new Logger("[" + MinecraftInfos.SERVER_NAME + "V" + MinecraftInfos.LAUNCHER_VERSION + "]", Path.of(this.launcherDir.toString(), "launcher.log"));
         if (!this.launcherDir.toFile().exists()) {
             if (!this.launcherDir.toFile().mkdir()) {
                 this.logger.err("Unable to create launcher folder");
