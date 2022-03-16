@@ -5,6 +5,7 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import fr.exiel.excelsia.Launcher;
 import fr.exiel.excelsia.game.MinecraftInfos;
 import fr.exiel.excelsia.ui.PanelManager;
+import fr.flowarg.flowio.FileUtils;
 import fr.flowarg.flowupdater.FlowUpdater;
 import fr.flowarg.flowupdater.download.DownloadList;
 import fr.flowarg.flowupdater.download.IProgressCallback;
@@ -26,13 +27,18 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
+import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Objects;
 
 public class Home extends  ContentPanel {
     private final Saver saver = Launcher.getInstance().getSaver();
@@ -109,6 +115,70 @@ public class Home extends  ContentPanel {
         Platform.runLater(() -> new Thread(this::update).start());
     }
 
+    public void updateLauncherForge() {
+        try {
+            FileUtils.deleteDirectory(Paths.get(Launcher.getInstance().getLauncherDir().toString() + "\\mods"));
+            FileUtils.deleteDirectory(Paths.get(Launcher.getInstance().getLauncherDir().toString() + "\\assets"));
+            FileUtils.deleteDirectory(Paths.get(Launcher.getInstance().getLauncherDir().toString() + "\\libraries"));
+            FileUtils.deleteDirectory(Paths.get(Launcher.getInstance().getLauncherDir().toString() + "\\natives"));
+            File file1 = new File(Launcher.getInstance().getLauncherDir().toString() + "\\client.jar");
+            file1.delete();
+        } catch (IOException e) {
+            this.logger.err(e + " : LauncherModsDir not found.");
+            return;
+        }
+        saver.set("updForge", "false");
+        saver.set("md5", "0");
+    }
+
+    public void updateLauncherMods() {
+        try {
+            FileUtils.deleteDirectory(Paths.get(Launcher.getInstance().getLauncherDir().toString() + "\\mods"));
+        } catch (IOException e) {
+            this.logger.err(e + " : LauncherModsDir not found.");
+            return;
+        }
+        saver.set("updMods", "false");
+        saver.set("md5", "0");
+    }
+
+    private int checkLauncherOptions(int val) {
+        String jsonString;
+        try {
+            URL url = new URL(MinecraftInfos.LAUNCHER_OPTIONS_URL);
+            InputStream is = url.openStream();
+            jsonString = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            this.logger.err(e + " : MD5 Update file not found.");
+            return 0;
+        }
+        JSONObject obj = new JSONObject(jsonString);
+        String updMods = obj.getString("updMods");
+        String updForge = obj.getString("updForge");
+        String localUpdMods = saver.get("updMods");
+        String localUpdForge = saver.get("updForge");
+        if (val == 1) {
+            if (Objects.equals(updForge, "true")) {
+                this.logger.info("Update Forge");
+                updateLauncherForge();
+            } else if (Objects.equals(updMods, "true")) {
+                this.logger.info("Update Mods");
+                updateLauncherMods();
+            }
+        } else {
+            if (Objects.equals(localUpdMods, "true")){
+                this.logger.info("Update Mods by Client");
+                updateLauncherMods();
+                return 1;
+            } else if (Objects.equals(localUpdForge, "true")) {
+                this.logger.info("Update Forge by Client");
+                updateLauncherForge();
+                return 1;
+            }
+        }
+        return 0;
+    }
+
     private Boolean checkUpdate() {
         String onlineMD5;
         try {
@@ -119,11 +189,20 @@ public class Home extends  ContentPanel {
             this.logger.err(e + " : MD5 Update file not found.");
             return false;
         }
+        int val = checkLauncherOptions(0);
+        if (val == 1) {
+            return true;
+        }
         String actualMD5 = saver.get("md5");
+        String findMods = saver.get("findMods");
         this.logger.info("OnlineMD5 : " + onlineMD5);
         this.logger.info("ActualMD5 : " + actualMD5);
-        if (onlineMD5.equals(actualMD5))
+        if (Objects.equals(findMods, "true")) {
+            saver.set("findMods", "false");
+            return true;
+        } else if (onlineMD5.equals(actualMD5))
             return false;
+        checkLauncherOptions(1);
         saver.set("md5", onlineMD5);
         return true;
     }

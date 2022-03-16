@@ -4,6 +4,7 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import fr.exiel.excelsia.Launcher;
 import fr.exiel.excelsia.ui.PanelManager;
+import fr.exiel.excelsia.ui.panels.pages.App;
 import fr.theshark34.openlauncherlib.util.Saver;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -104,31 +105,85 @@ public class Settings extends ContentPanel{
         contentPane.getChildren().add(comboBox);
 
         // Mods Find Reset Label
-        Label resetMods = new Label("Reset Mods Finder");
+        Label resetFindMods = new Label("Reset Mods Finder");
+        resetFindMods.getStyleClass().add("settings-labels");
+        setLeft(resetFindMods);
+        setCanTakeAllSize(resetFindMods);
+        setTop(resetFindMods);
+        resetFindMods.setTextAlignment(TextAlignment.LEFT);
+        resetFindMods.setTranslateX(24d);
+        resetFindMods.setTranslateY(165d);
+        contentPane.getChildren().add(resetFindMods);
+
+        // Mods Find Reset Button
+        Button resetModsFindBtn = new Button("Reset");
+        resetModsFindBtn.getStyleClass().add("reset-mods");
+        FontAwesomeIconView iconRst = new FontAwesomeIconView(FontAwesomeIcon.UNDO);
+        resetModsFindBtn.setGraphic(iconRst);
+        setLeft(resetModsFindBtn);
+        setTop(resetModsFindBtn);
+        setCanTakeAllSize(resetModsFindBtn);
+        resetModsFindBtn.setTranslateX(35d);
+        resetModsFindBtn.setTranslateY(190d);
+        resetModsFindBtn.setOnMouseClicked(e -> {
+            saver.set("findMods", "true");
+            panelManager.showPanel(new App());
+        });
+        contentPane.getChildren().add(resetModsFindBtn);
+
+        // Mods Reset Label
+        Label resetMods = new Label("Reset Mods");
         resetMods.getStyleClass().add("settings-labels");
         setLeft(resetMods);
         setCanTakeAllSize(resetMods);
         setTop(resetMods);
         resetMods.setTextAlignment(TextAlignment.LEFT);
         resetMods.setTranslateX(24d);
-        resetMods.setTranslateY(165d);
+        resetMods.setTranslateY(235d);
         contentPane.getChildren().add(resetMods);
 
-        // Mods Find Reset Button
+        // Mods Reset Button
         Button resetModsBtn = new Button("Reset");
         resetModsBtn.getStyleClass().add("reset-mods");
-        FontAwesomeIconView iconRst = new FontAwesomeIconView(FontAwesomeIcon.UNDO);
-        iconRst.getStyleClass().add("save-icon");
-        resetModsBtn.setGraphic(iconRst);
+        FontAwesomeIconView iconRst2 = new FontAwesomeIconView(FontAwesomeIcon.UNDO);
+        resetModsBtn.setGraphic(iconRst2);
         setLeft(resetModsBtn);
         setTop(resetModsBtn);
         setCanTakeAllSize(resetModsBtn);
         resetModsBtn.setTranslateX(35d);
-        resetModsBtn.setTranslateY(190d);
+        resetModsBtn.setTranslateY(260d);
         resetModsBtn.setOnMouseClicked(e -> {
-            saver.set("md5", "0");
+            saver.set("updMods", "true");
+            panelManager.showPanel(new App());
         });
         contentPane.getChildren().add(resetModsBtn);
+
+        // Forge Reset Label
+        Label resetForge = new Label("Reset Forge");
+        resetForge.getStyleClass().add("settings-labels");
+        setLeft(resetForge);
+        setCanTakeAllSize(resetForge);
+        setTop(resetForge);
+        resetForge.setTextAlignment(TextAlignment.LEFT);
+        resetForge.setTranslateX(24d);
+        resetForge.setTranslateY(305);
+        contentPane.getChildren().add(resetForge);
+
+        // Forge Reset Button
+        Button resetForgeBtn = new Button("Reset");
+        resetForgeBtn.getStyleClass().add("reset-mods");
+        FontAwesomeIconView iconRst3 = new FontAwesomeIconView(FontAwesomeIcon.UNDO);
+        resetForgeBtn.setGraphic(iconRst3);
+        setLeft(resetForgeBtn);
+        setTop(resetForgeBtn);
+        setCanTakeAllSize(resetForgeBtn);
+        resetForgeBtn.setTranslateX(35d);
+        resetForgeBtn.setTranslateY(330d);
+        resetForgeBtn.setOnMouseClicked(e -> {
+            saver.set("updForge", "true");
+            panelManager.showPanel(new App());
+        });
+        contentPane.getChildren().add(resetForgeBtn);
 
         /*
          * Save Button
@@ -145,6 +200,7 @@ public class Settings extends ContentPanel{
             double _val = Double.parseDouble(comboBox.getValue().replace(" Go", ""));
             _val *= 1024;
             saver.set("maxRam", String.valueOf((int) _val));
+            panelManager.showPanel(new App());
         });
         contentPane.getChildren().add(saveBtn);
     }
